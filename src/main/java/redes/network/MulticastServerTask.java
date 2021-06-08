@@ -1,4 +1,4 @@
-package redes;
+package redes.network;
 
 import javafx.concurrent.Task;
 

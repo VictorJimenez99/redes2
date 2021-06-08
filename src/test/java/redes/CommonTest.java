@@ -1,5 +1,7 @@
 package redes;
 import org.junit.jupiter.api.Test;
+import redes.network.Common;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommonTest {

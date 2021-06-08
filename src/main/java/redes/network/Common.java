@@ -1,4 +1,4 @@
-package redes;
+package redes.network;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
