@@ -5,6 +5,7 @@ import javafx.concurrent.Task;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,14 +13,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MulticastServerTask extends Task<Void> {
     private final DatagramSocket socket;
+    private final AtomicInteger MulticastPort;
     private final AtomicInteger RMIPort;
     //private final AtomicBoolean lastFlag;
 
-    public MulticastServerTask(int rmiPort) throws IOException {
+    public MulticastServerTask(int multicastServerPort, int rmiPort) throws IOException {
         System.out.print("\tCreating a new Multicast Socket...");
         this.RMIPort = new AtomicInteger(rmiPort);
         //this.lastFlag = new AtomicBoolean(lastFlag);
-        socket = new DatagramSocket();
+        socket = new DatagramSocket(multicastServerPort);
+        this.MulticastPort = new AtomicInteger(multicastServerPort);
         System.out.println("Done");
     }
 
@@ -29,10 +32,10 @@ public class MulticastServerTask extends Task<Void> {
         var task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                var initialConfig = "RMIPort:" + RMIPort.get();
+                var initialConfig = "RMIPort:" + RMIPort.get() + "\nMulticastSocket:" + MulticastPort.get();
                 System.out.println(initialConfig);
                 while (true) {
-                    var msg = "RMIPort:" + RMIPort.get();
+                    var msg = "RMIPort:" + RMIPort.get() + "\nMulticastSocket:" + MulticastPort.get();
                     sendMessage(msg);
                     Thread.sleep(5000);
                 }

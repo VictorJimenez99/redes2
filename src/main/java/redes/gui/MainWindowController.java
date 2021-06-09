@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -20,6 +21,7 @@ public class MainWindowController {
     public Button destFolderButton;
     public Button srcFolderButton;
     public TableView<PeerEntry> peerTable;
+    public TextField portTextField;
 
     private String destinationFolder;
     private String srcFolder;
@@ -40,8 +42,16 @@ public class MainWindowController {
     }
 
     public void tryToUnlock() throws InterruptedException {
+        var portString = portTextField.getText();
+        var port = -1;
+        try {
+            port = Integer.parseInt(portString);
+        } catch (NumberFormatException exception) {
+            return;
+        }
+        portTextField.setDisable(true);
         joinButton.setDisable(true);
-        var networkTask = new NetworkTask(peerTable);
+        var networkTask = new NetworkTask(peerTable, port);
         var thread = new Thread(networkTask);
         thread.setDaemon(true);
         thread.start();

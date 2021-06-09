@@ -33,4 +33,7 @@ public class PeerEntry {
     public void setMulticastPort(int multicastPort) {
         this.multicastPort = multicastPort;
     }
+    public String getKey() {
+        return this.ipAddr+":"+this.rmiPort;
+    }
 }

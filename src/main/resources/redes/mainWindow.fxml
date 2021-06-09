@@ -27,5 +27,6 @@
       </Pane>
       <Button fx:id="destFolderButton" layoutX="923.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#setDestFolder" text="Carpeta Destino" />
       <Button fx:id="srcFolderButton" layoutX="1056.0" layoutY="15.0" mnemonicParsing="false" onMouseClicked="#setSrcFolder" prefHeight="25.0" prefWidth="124.0" text="Carpeta Origen" />
+      <TextField fx:id="portTextField" layoutX="1189.0" layoutY="44.0" prefHeight="25.0" prefWidth="77.0" promptText="puerto" />
    </children>
 </Pane>

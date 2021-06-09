@@ -15,12 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 //**This task should be the one that manages every other task in this package (redes.network)*/
 public class NetworkTask extends Task<Void> {
-    private int rmiTextFieldResult;
+    private final int multicastPort;
     private MulticastServerTask serverTask;
     private TableView<PeerEntry> peerTable;
 
-    public NetworkTask(TableView<PeerEntry> table) {
+    public NetworkTask(TableView<PeerEntry> table, int multicastPort) {
         this.peerTable = table;
+        this.multicastPort = multicastPort;
     }
 
     @Override
@@ -50,13 +51,17 @@ public class NetworkTask extends Task<Void> {
         testerThread.start();
         System.out.print("Waiting for tester to finish...");
         testerThread.join();
+        var clientTask = new MulticastClientTask(peerTable);
+        var clientTaskThread = new Thread(clientTask);
+        clientTaskThread.setDaemon(true);
+        clientTaskThread.start();
         return null;
     }
 
 
     private void createServer(int rmiPort) {
         try {
-            serverTask = new MulticastServerTask(rmiPort);
+            serverTask = new MulticastServerTask(multicastPort, rmiPort);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,9 +96,11 @@ public class NetworkTask extends Task<Void> {
                         complete.append(msg);
                     }
                     var msg = Common.splitMessage(complete.toString().trim());
-                    var peerPort = Common.getPropertyFromMessage(msg, "RMIPort");
-                    System.out.println("Got peerPort: " + peerPort);
-                    arrayMax.add(Integer.parseInt(peerPort));
+                    var peerRMIPort = Common.getPropertyFromMessage(msg, "RMIPort");
+                    var peerMultiCastSocket = Common.getPropertyFromMessage(msg, "MulticastSocket");
+                    System.out.println("peer:\n\tRMI: " + peerRMIPort+"\n\tMulticast" + peerMultiCastSocket);
+
+                    arrayMax.add(Integer.parseInt(peerRMIPort));
                     result.set(Collections.max(arrayMax));
                 }
                 return null;
