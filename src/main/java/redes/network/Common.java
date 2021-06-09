@@ -35,4 +35,16 @@ public class Common {
         ret = keyChain.toArray(ret);
         return ret;
     }
+    public static String getPropertyFromMessage(String [][] table, String key) {
+        System.out.println("Searching for: " + key + " inside message");
+        for(String [] pair: table) {
+            for(String keyVal: pair) {
+                System.out.println(keyVal);
+            }
+            if(pair[0].equals(key)) {
+                return pair[1];
+            }
+        }
+        return "";
+    }
 }
