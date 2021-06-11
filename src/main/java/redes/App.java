@@ -17,7 +17,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("mainWindow"), 1280, 720);
+        scene = new Scene(loadFXML("mainWindow"));
         stage.setScene(scene);
         stage.setTitle("Topología de Anillo");
         stage.setResizable(false);

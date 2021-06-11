@@ -10,6 +10,11 @@ public class PeerEntry {
         this.rmiPort = rmiPort;
     }
 
+    @Override
+    public String toString() {
+        return getKey();
+    }
+
     public String getIpAddr() {
         return ipAddr;
     }

@@ -2,6 +2,7 @@ package redes.network;
 
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 
 import java.io.IOException;
@@ -16,42 +17,57 @@ import java.util.concurrent.atomic.AtomicInteger;
 //**This task should be the one that manages every other task in this package (redes.network)*/
 public class NetworkTask extends Task<Void> {
     private final int multicastPort;
+    private int myRMIPort;
     private MulticastServerTask serverTask;
     private TableView<PeerEntry> peerTable;
+    private Label prevNodeLabel;
+    private Label nextNodeLabel;
 
-    public NetworkTask(TableView<PeerEntry> table, int multicastPort) {
+    public NetworkTask(TableView<PeerEntry> table, int multicastPort,
+                       Label prevNodeLabel, Label nextNodeLabel) {
         this.peerTable = table;
         this.multicastPort = multicastPort;
+        this.nextNodeLabel = nextNodeLabel;
+        this.prevNodeLabel = prevNodeLabel;
     }
 
     @Override
     public Void call() throws InterruptedException, IOException {
-        AtomicBoolean result = new AtomicBoolean(false);
-
+        var result = new AtomicBoolean(false);
+        var testerFinished = new AtomicBoolean(false);
         var tester = new TopologyTesterTask();
         tester.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, event -> {
             System.out.println("Done");
             var isNew = tester.getValue();
             System.out.println("got: " + isNew + " from tester");
             result.set(isNew);
+            var port = 0;
             var alreadyCreated = result.get();
             if (!alreadyCreated) {
                 System.out.println("Creating a new Topology...");
                 createServer(9000);
+                myRMIPort = 9000;
                 System.out.println("Created a new Topology");
             }else {
                 System.out.println("Joining the created topology...");
-                var port = askForHighestRMIPort();
-                createServer(port+1);
+                port = askForHighestRMIPort();
+                myRMIPort = port+1;
+                createServer(myRMIPort);
+                System.out.println("Highest RMI Port: " + port);
+                System.out.println("Setting myRMIPort to: " + myRMIPort);
                 //set rmi Port to 'port + 1'
-                System.out.println("Done");
             }
+            testerFinished.set(true);
         });
         var testerThread = new Thread(tester);
         testerThread.start();
         System.out.print("Waiting for tester to finish...");
         testerThread.join();
-        var clientTask = new MulticastClientTask(peerTable);
+        while (!testerFinished.get()) {
+            Thread.sleep(1);
+        }
+        System.out.println("Done");
+        var clientTask = new MulticastClientTask(peerTable, myRMIPort, prevNodeLabel, nextNodeLabel);
         var clientTaskThread = new Thread(clientTask);
         clientTaskThread.setDaemon(true);
         clientTaskThread.start();
@@ -96,9 +112,12 @@ public class NetworkTask extends Task<Void> {
                         complete.append(msg);
                     }
                     var msg = Common.splitMessage(complete.toString().trim());
-                    var peerRMIPort = Common.getPropertyFromMessage(msg, "RMIPort");
-                    var peerMultiCastSocket = Common.getPropertyFromMessage(msg, "MulticastSocket");
-                    System.out.println("peer:\n\tRMI: " + peerRMIPort+"\n\tMulticast" + peerMultiCastSocket);
+                    var peerRMIPort = Common.
+                            getPropertyFromMessage(msg, "RMIPort");
+                    var peerMultiCastSocket = Common.
+                            getPropertyFromMessage(msg, "MulticastSocket");
+                    System.out.println("peer:\n\tRMI: " +
+                            peerRMIPort+"\n\tMulticast: " + peerMultiCastSocket);
 
                     arrayMax.add(Integer.parseInt(peerRMIPort));
                     result.set(Collections.max(arrayMax));

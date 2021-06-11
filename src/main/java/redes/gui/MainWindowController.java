@@ -1,16 +1,19 @@
 package redes.gui;
 
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import redes.network.NetworkTask;
 import redes.network.PeerEntry;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MainWindowController {
     public Pane workspace;
@@ -22,9 +25,13 @@ public class MainWindowController {
     public Button srcFolderButton;
     public TableView<PeerEntry> peerTable;
     public TextField portTextField;
+    public Label nextNodeLabel;
+    public Label prevNodeLabel;
 
     private String destinationFolder;
     private String srcFolder;
+
+    private AtomicReference<String> connectionChannelAddress;
 
 
     @FXML
@@ -39,6 +46,10 @@ public class MainWindowController {
                 new SimpleStringProperty(peer.getValue().getMulticastPort()+""));
         rmiColumn.setCellValueFactory(peer->
                 new SimpleStringProperty(peer.getValue().getRmiPort() + ""));
+        var list = peerTable.getItems();
+        connectionChannelAddress = new AtomicReference<>();
+
+
     }
 
     public void tryToUnlock() throws InterruptedException {
@@ -50,8 +61,10 @@ public class MainWindowController {
             return;
         }
         portTextField.setDisable(true);
+        var stage = (Stage)portTextField.getScene().getWindow();
+        stage.setTitle("Topología de anillo puerto: " + portString);
         joinButton.setDisable(true);
-        var networkTask = new NetworkTask(peerTable, port);
+        var networkTask = new NetworkTask(peerTable, port, prevNodeLabel, nextNodeLabel);
         var thread = new Thread(networkTask);
         thread.setDaemon(true);
         thread.start();
