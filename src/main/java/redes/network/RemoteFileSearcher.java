@@ -25,7 +25,7 @@ public class RemoteFileSearcher extends UnicastRemoteObject implements FileSearc
     }
 
     @Override
-    public String getFileLocation(String fileName, int caller) throws RemoteException {
+    public String getFileLocation(String fileName, int caller, int relay) throws RemoteException {
         if(port == caller) {
             logger.postMessage("Se ha completado toda la busqueda en la topología");
             logger.postMessage(" sin embargo, no ha sido posible encontrar el archivo en el resto");
@@ -43,6 +43,7 @@ public class RemoteFileSearcher extends UnicastRemoteObject implements FileSearc
             return "None";
         }
         logger.postMessageln(caller+": Buscando el archivo: " + fileName);
+        logger.postMessageln("Relay Node: " + relay);
         var dirList = directory.list();
         var found = false;
         if (dirList == null) { dirList = new String[0]; }
@@ -62,7 +63,7 @@ public class RemoteFileSearcher extends UnicastRemoteObject implements FileSearc
                 var nextPort = Integer.parseInt(nextPortName.split(":")[1].trim());
                 var registry = LocateRegistry.getRegistry(nextPort);
                 var searcher = (FileSearcher)registry.lookup("RemoteFileSearcher");
-                var location = searcher.getFileLocation(fileName, caller);
+                var location = searcher.getFileLocation(fileName, caller, port);
                 logger.postMessageln("file location: " + location);
                 return location;
 

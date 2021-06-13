@@ -135,7 +135,7 @@ public class MainWindowController {
             var stage = (Stage)peerTable.getScene().getWindow();
             var myPortString = stage.getTitle();
             var myPort = Integer.parseInt(myPortString.split(":")[1].trim());
-            var location = searcher.getFileLocation(fileName, myPort);
+            var location = searcher.getFileLocation(fileName, myPort, myPort);
 
             if(location.equals("None")) {
                 logger.postMessageln("\nNo se ha encontrado el archivo");
