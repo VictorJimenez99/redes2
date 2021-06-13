@@ -3,7 +3,6 @@ package redes.network;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
-import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class MulticastClientTask extends Task<Void> {
     private final MulticastSocket receiver;
@@ -45,7 +43,7 @@ public class MulticastClientTask extends Task<Void> {
                     }
                     position += 1;
                 }
-                PeerEntry ref;
+                PeerEntry ref = null;
                 if(foundNext) {
                     System.out.println("found a new nextNode at position: " + position);
                     ref = list.get(position);
@@ -58,7 +56,14 @@ public class MulticastClientTask extends Task<Void> {
                         }
                         startingNodeIndex += 1;
                     }
-                    ref = list.get(startingNodeIndex);
+                    try {
+                        ref = list.get(startingNodeIndex);
+                    } catch (IndexOutOfBoundsException e) {
+                        System.out.println("waiting to connect to every other peer");
+                    }
+                }
+                if(ref == null) {
+                    ref = list.get(list.size()-1);
                 }
                 PeerEntry finalRef = ref;
                 Platform.runLater(()->nextNodeLabel.setText(finalRef + ""));

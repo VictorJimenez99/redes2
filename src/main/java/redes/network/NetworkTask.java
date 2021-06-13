@@ -1,9 +1,15 @@
 package redes.network;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+import redes.Logger;
+import redes.RegistryPointer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -19,22 +25,37 @@ public class NetworkTask extends Task<Void> {
     private final int multicastPort;
     private int myRMIPort;
     private MulticastServerTask serverTask;
-    private TableView<PeerEntry> peerTable;
-    private Label prevNodeLabel;
-    private Label nextNodeLabel;
+    private final TableView<PeerEntry> peerTable;
+    private final Label prevNodeLabel;
+    private final Label nextNodeLabel;
+    private final ProgressIndicator spinner;
+    private final Pane workspace;
+    private final Logger logger;
+    private final String srcFolder;
+    private final RegistryPointer registryPointer;
 
-    public NetworkTask(TableView<PeerEntry> table, int multicastPort,
-                       Label prevNodeLabel, Label nextNodeLabel) {
+    public NetworkTask(TableView<PeerEntry> table, String srcFolder, int multicastPort,
+                       Label prevNodeLabel, Label nextNodeLabel,
+                       ProgressIndicator spinner, Pane workspace, Logger logger,
+                       RegistryPointer registryPointer) {
         this.peerTable = table;
         this.multicastPort = multicastPort;
         this.nextNodeLabel = nextNodeLabel;
         this.prevNodeLabel = prevNodeLabel;
+        this.spinner = spinner;
+        this.workspace = workspace;
+        this.logger = logger;
+        this.srcFolder = srcFolder;
+        this.registryPointer = registryPointer;
+        logger.postMessageln("Se hará inicio de la configuración del servidor");
+        spinner.setVisible(true);
     }
 
     @Override
     public Void call() throws InterruptedException, IOException {
         var result = new AtomicBoolean(false);
         var testerFinished = new AtomicBoolean(false);
+
         var tester = new TopologyTesterTask();
         tester.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, event -> {
             System.out.println("Done");
@@ -67,10 +88,35 @@ public class NetworkTask extends Task<Void> {
             Thread.sleep(1);
         }
         System.out.println("Done");
-        var clientTask = new MulticastClientTask(peerTable, myRMIPort, prevNodeLabel, nextNodeLabel);
+        var clientTask = new MulticastClientTask(peerTable, myRMIPort,
+                prevNodeLabel, nextNodeLabel);
         var clientTaskThread = new Thread(clientTask);
         clientTaskThread.setDaemon(true);
         clientTaskThread.start();
+
+        Platform.runLater(()-> {
+            var stage = (Stage)peerTable.getScene().getWindow();
+            stage.setTitle("Topología de anillo puerto: " + myRMIPort);
+        });
+
+        var rmiTask = new RMIServerTask(srcFolder, myRMIPort,
+                nextNodeLabel, registryPointer,logger);
+        var rmiTaskThread = new Thread(rmiTask);
+        rmiTaskThread.setDaemon(true);
+        rmiTaskThread.start();
+
+
+        var fileServerPort = myRMIPort + 100;
+        var fileServer = new FileServerTask(fileServerPort, srcFolder);
+        var fileServerThread = new Thread(fileServer);
+        fileServerThread.setDaemon(true);
+        fileServerThread.start();
+
+
+        logger.postMessageln("Terminada toda la configuración de red: " + myRMIPort);
+        logger.postMessageln("Puerto de servidor de archivos: " + fileServerPort);
+        spinner.setVisible(false);
+        workspace.setDisable(false);
         return null;
     }
 
@@ -90,6 +136,7 @@ public class NetworkTask extends Task<Void> {
         var result = new AtomicInteger(0);
         var arrayMax = new ArrayList<Integer>();
         var flag = new AtomicBoolean(true);
+        var hasFinished = new AtomicBoolean(false);
         var getHighestRMIPortTask = new Task<Void>() {
             @Override
             public Void call() throws IOException {
@@ -122,6 +169,7 @@ public class NetworkTask extends Task<Void> {
                     arrayMax.add(Integer.parseInt(peerRMIPort));
                     result.set(Collections.max(arrayMax));
                 }
+                hasFinished.set(true);
                 return null;
             }
         };
@@ -131,7 +179,9 @@ public class NetworkTask extends Task<Void> {
         try {
             Thread.sleep(9000);
             flag.set(false);
-            Thread.sleep(2000);
+            while (!hasFinished.get()) {
+                Thread.sleep(1);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

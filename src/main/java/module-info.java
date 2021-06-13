@@ -1,6 +1,7 @@
 module redes {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.rmi;
 
     opens redes to javafx.fxml;
     exports redes;

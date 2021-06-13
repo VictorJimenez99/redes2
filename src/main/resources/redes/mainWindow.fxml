@@ -6,31 +6,36 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="redes.gui.MainWindowController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="509.0" prefWidth="760.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="redes.gui.MainWindowController">
    <children>
-      <Label layoutX="20.0" layoutY="5.0" text="Topología de Anillo" textFill="#ffac00">
+      <ProgressIndicator fx:id="loaderSpinnerIndicator" layoutX="350.0" layoutY="230.0" visible="false" />
+      <Label layoutX="14.0" layoutY="6.0" text="Topología de Anillo" textFill="#ffac00">
          <font>
             <Font name="System Bold" size="35.0" />
          </font>
       </Label>
-      <Button fx:id="joinButton" layoutX="909.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#tryToUnlock" text="Conectar" />
-      <Pane fx:id="workspace" layoutX="4.0" layoutY="56.0" prefHeight="664.0" prefWidth="1000.0">
+      <Button fx:id="joinButton" layoutX="669.0" layoutY="17.0" mnemonicParsing="false" onMouseClicked="#tryToUnlock" text="Conectar" />
+      <Pane fx:id="workspace" layoutX="1.0" layoutY="50.0" prefHeight="457.0" prefWidth="759.0">
          <children>
-            <TableView fx:id="peerTable" layoutX="647.0" layoutY="30.0" prefHeight="246.0" prefWidth="346.0">
+            <TableView fx:id="peerTable" layoutX="399.0" layoutY="45.0" prefHeight="246.0" prefWidth="346.0">
               <columns>
                 <TableColumn fx:id="ipColumn" prefWidth="170.0" text="IP" />
                 <TableColumn fx:id="rmiColumn" prefWidth="92.0" text="RMI" />
                   <TableColumn fx:id="multicastColumn" prefWidth="79.0" text="Multicast" />
               </columns>
             </TableView>
-            <Label layoutX="14.0" layoutY="30.0" text="Anterior" />
-            <Label layoutX="357.0" layoutY="30.0" text="Siguiente" />
-            <Label fx:id="nextNodeLabel" layoutX="441.0" layoutY="30.0" prefHeight="15.0" prefWidth="180.0" />
-            <Label fx:id="prevNodeLabel" layoutX="75.0" layoutY="30.0" prefHeight="15.0" prefWidth="180.0" />
+            <Label layoutX="14.0" layoutY="45.0" text="Anterior" />
+            <Label layoutX="14.0" layoutY="73.0" text="Siguiente" />
+            <Label fx:id="nextNodeLabel" layoutX="80.0" layoutY="73.0" prefHeight="15.0" prefWidth="180.0" />
+            <Label fx:id="prevNodeLabel" layoutX="80.0" layoutY="45.0" prefHeight="15.0" prefWidth="180.0" />
+            <TextField fx:id="fileNameSearchBar" layoutX="399.0" layoutY="313.0" prefHeight="25.0" prefWidth="346.0" promptText="Nombre del Archivo" />
+            <Button layoutX="399.0" layoutY="362.0" mnemonicParsing="false" onMouseClicked="#searchFile" prefHeight="25.0" prefWidth="346.0" text="Buscar Archivo" />
+            <ProgressBar fx:id="progressBar" layoutX="16.0" layoutY="416.0" prefHeight="20.0" prefWidth="730.0" progress="0.0" />
          </children>
       </Pane>
-      <Button fx:id="destFolderButton" layoutX="643.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#setDestFolder" text="Carpeta Destino" />
-      <Button fx:id="srcFolderButton" layoutX="776.0" layoutY="15.0" mnemonicParsing="false" onMouseClicked="#setSrcFolder" prefHeight="25.0" prefWidth="124.0" text="Carpeta Origen" />
-      <TextField fx:id="portTextField" layoutX="909.0" layoutY="44.0" prefHeight="25.0" prefWidth="77.0" promptText="puerto" />
+      <Button fx:id="destFolderButton" layoutX="403.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#setDestFolder" text="Carpeta Destino" />
+      <Button fx:id="srcFolderButton" layoutX="536.0" layoutY="15.0" mnemonicParsing="false" onMouseClicked="#setSrcFolder" prefHeight="25.0" prefWidth="124.0" text="Carpeta Origen" />
+      <TextField fx:id="portTextField" layoutX="669.0" layoutY="44.0" prefHeight="25.0" prefWidth="77.0" promptText="puerto" />
+      <TextArea fx:id="log" editable="false" layoutX="15.0" layoutY="146.0" prefHeight="298.0" prefWidth="346.0" wrapText="true" />
    </children>
 </Pane>
